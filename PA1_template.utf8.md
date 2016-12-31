@@ -10,7 +10,8 @@ This document was produced using R Studio Version 1.0.44
 
 ### 1. Loading the data (i.e. read.csv())
 
-```{r}
+
+```r
 #Creating the directory to process the data
 if(!file.exists("data")) { dir.create("data")}
 
@@ -25,14 +26,23 @@ rm(fileUrl)
 
 #Reading the data
 activity <- read.csv(file="./data/activity.csv",header = TRUE)
-
 ```
 
 ### 2.Processing/transforming the data (if necessary) into a format suitable for the analysis
-```{r}
+
+```r
 #Finding out the column types
 str(activity)
+```
 
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+```r
 #Converting the date from factor to date format
 activity$date <- as.Date(activity$date,"%Y-%m-%d")
 
@@ -40,53 +50,89 @@ activity$date <- as.Date(activity$date,"%Y-%m-%d")
 str(activity)
 ```
 
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
 ##What is mean total number of steps taken per day?
 For this part of the assignment, the missing values in the dataset were ignored.
 
-```{r}
+
+```r
 #Creating a data set without NAs
 activity_noNA <- activity[complete.cases(activity),]
 ```
 
 ### 1. Calculating the total number of steps taken per day
 
-```{r}
+
+```r
 stepsperday <- tapply(activity_noNA$steps,activity_noNA$date,FUN=sum)
 stepsperday_df <- data.frame(day = names(stepsperday), steps = stepsperday)
 
 head(stepsperday_df)
 ```
 
+```
+##                   day steps
+## 2012-10-02 2012-10-02   126
+## 2012-10-03 2012-10-03 11352
+## 2012-10-04 2012-10-04 12116
+## 2012-10-05 2012-10-05 13294
+## 2012-10-06 2012-10-06 15420
+## 2012-10-07 2012-10-07 11015
+```
+
 ### 2. [Difference between a Histogram and a Bar Plot](http://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP).Making a histogram of the total number of steps taken each day
 
-```{r}
+
+```r
 hist(stepsperday_df$steps,
      main="Histogram of total number of steps taken each day",
      xlab="",
      col = "skyblue")
 ```
 
+<img src="PA1_template_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+
 ### 3. Calculating and reporting the mean and median of the total number of steps taken per day
 
-```{r}
+
+```r
 #Calculating the mean and medians
-```{r}
+```
+
+```r
 #Mean
 noNA_mean <- mean(stepsperday_df$steps)
 noNA_mean
+```
 
+```
+## [1] 10766.19
+```
+
+```r
 #Median
 noNA_median <- median(stepsperday_df$steps)
 noNA_median
 ```
 
-The mean is **`r format(noNA_mean,digits=2)`** and the median is **`r format(noNA_median,digits=2)`**.
+```
+## [1] 10765
+```
+
+The mean is **10766** and the median is **10765**.
 
 ## What is the average daily activity pattern?
 
 ### 1. Making a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r}
+
+```r
 #Getting the amount of steps per each interval
 stepsperinterval <- tapply(activity_noNA$steps,activity_noNA$interval,FUN=mean)
 stepsperinterval_df <- data.frame(interval = names(stepsperinterval), 
@@ -106,16 +152,21 @@ stepsperinterval_df$interval2 <- strptime(
 with(stepsperinterval_df,plot(interval2,meanstepsint, type="l", 
                               xlab= "Intervals", ylab="Average Steps",
                               main = "Average steps per interval."))
-
 ```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-8-1.png" width="672" />
 
 ### 2. Determining Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps.
 
-```{r}
+
+```r
 interval <- subset(stepsperinterval_df,
                    meanstepsint==max(stepsperinterval_df$meanstepsint))$interval
 as.character(interval)
+```
 
+```
+## [1] "835"
 ```
 
 
@@ -126,12 +177,17 @@ The presence of missing days may introduce bias into some calculations or summar
 
 ### 1. Calculating and reporting the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-```{r}
+
+```r
 sumNA <- sum(is.na(activity$steps))
 sumNA
 ```
 
-The total number of missing values in the dataset is **`r sumNA`**.
+```
+## [1] 2304
+```
+
+The total number of missing values in the dataset is **2304**.
 
 ### 2. Devising a strategy for filling in all of the missing values in the dataset.
 
@@ -140,13 +196,25 @@ for that interval across all the days. This was calculated above.
 
 Here is a sneak peak of this data:
 
-```{r}
+
+```r
 head(stepsperinterval_df)
+```
+
+```
+##    interval meanstepsint           interval2
+## 0         0    1.7169811 2016-12-30 00:00:00
+## 5         5    0.3396226 2016-12-30 00:05:00
+## 10       10    0.1320755 2016-12-30 00:10:00
+## 15       15    0.1509434 2016-12-30 00:15:00
+## 20       20    0.0754717 2016-12-30 00:20:00
+## 25       25    2.0943396 2016-12-30 00:25:00
 ```
 
 ### 3. Creating a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r}
+
+```r
 #Filling the NA Information
 library(plyr)
 activity2 <- join(x=activity,y=stepsperinterval_df,by="interval")
@@ -158,12 +226,12 @@ for(i in 1:nrow(activity2)){
 }
 #Creating the dataset
 activity2 <- activity2[,1:3]
-
 ```
 
 ### 4. Making a histogram of the total number of steps taken each day and Calculating and report the mean and median total number of steps taken per day.
 
-```{r}
+
+```r
 #mean and median steps per day
 stepsperday_df$meansteps <- tapply(activity_noNA$steps,activity_noNA$date,FUN=mean)
 stepsperday_df$mediansteps <- tapply(activity_noNA$steps,activity_noNA$date,FUN=median)
@@ -171,14 +239,24 @@ stepsperday_df$mediansteps <- tapply(activity_noNA$steps,activity_noNA$date,FUN=
 #Total Mean
 all_mean <- mean(stepsperday_df$steps)
 all_mean
+```
 
+```
+## [1] 10766.19
+```
+
+```r
 #Total Median
 all_median <- median(stepsperday_df$steps)
 all_median
 ```
 
-So we have that the mean without NAs is **`r format(noNA_mean,digits=2)`** and the median is **`r format(noNA_median,digits=2)`**.
-The mean with the missing values filled is **`r format(all_mean,digits=2)`** and the median is **`r format(all_median,digits=2)`**.
+```
+## [1] 10765
+```
+
+So we have that the mean without NAs is **10766** and the median is **10765**.
+The mean with the missing values filled is **10766** and the median is **10765**.
 
 **Answering the questions:**
 
@@ -191,7 +269,8 @@ The dataset with the filled-in missing values will be used.
 
 ### 1. Creating a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 activity2$dayofweek <- ""
 
 for(i in 1:nrow(activity2)){
@@ -203,11 +282,11 @@ for(i in 1:nrow(activity2)){
 }
 
 activity2$dayofweek <- as.factor(activity2$dayofweek)
-
 ```
 
 ### 2. Making a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
-```{r}
+
+```r
 #Getting the data for the plot
 weekday <- subset(activity2,activity2$dayofweek=="weekday")
 weekend <- subset(activity2,activity2$dayofweek=="weekend")
@@ -238,6 +317,7 @@ spi$interval2 <- strptime(
 qplot(x = interval,y=meanstepsint, data=spi, geom = "line", 
       xlab = "Average steps", ylab="Intervals") +
     facet_wrap(~ dayofweek, ncol = 1)
-
 ```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-15-1.png" width="672" />
 
